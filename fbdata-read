@@ -1,0 +1,54 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+my ($data_dir) = @ARGV;
+
+validate_dir($data_dir);
+
+get_download_timestamp();
+
+parse_timeline();
+
+parse_messages();
+
+sub validate_dir {
+	my ($data_dir) = @_;
+
+	unless (-d $data_dir) {
+		die "not a directory: $data_dir";
+	}
+
+	chdir($data_dir) or die "couldn't chdir($data_dir): $!";
+
+	# needed for Download date
+	unless (-f 'index.htm') {
+		die "no index.htm";
+	}
+
+	foreach my $dir (qw( html messages photos videos)) {
+		unless (-d $dir) {
+			die "no $dir directory";
+		}
+	}
+
+	# the timeline
+	unless (-f 'html/timeline.htm') {
+		die "no html/timeline.htm";
+	}
+
+	print "$data_dir looks like a Facebook data dump\n";
+}
+
+sub get_download_timestamp {
+	die "unimplemented get";
+}
+
+sub parse_timeline {
+	die "unimplemented parse";
+}
+
+sub parse_messages {
+	die "unimplemented parse msg";
+}

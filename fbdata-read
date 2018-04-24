@@ -2,12 +2,16 @@
 
 use strict;
 use warnings;
+use Data::Dumper; # just for debugging
+use File::Slurp qw(read_file);
+#use LWP::Simple qw(get);
+use HTML::TreeBuilder;
 
 my ($data_dir) = @ARGV;
 
 validate_dir($data_dir);
 
-get_download_timestamp();
+my ($who,$when) = get_download_timestamp();
 
 parse_timeline();
 
@@ -42,7 +46,21 @@ sub validate_dir {
 }
 
 sub get_download_timestamp {
-	die "unimplemented get";
+	#system("pwd");
+	my $index_htm = read_file("index.htm");
+	my $index_size = length($index_htm);
+	print "got $index_size bytes in index.htm\n";
+
+	my $tree = HTML::TreeBuilder->new;    # empty tree
+	$tree->parse_content($index_htm);
+
+#	$tree->dump;
+	my $downloaded_div = $tree->look_down('_tag' => 'div', class => 'footer');
+	my $downloaded_raw = $downloaded_div->as_text;
+	$downloaded_raw =~ /Downloaded by (.+) on (.+)$/;
+	my $who = $1;
+	my $when = $2;
+	return($who,$when);
 }
 
 sub parse_timeline {

@@ -9,6 +9,12 @@ use HTML::TreeBuilder;
 
 my ($data_dir) = @ARGV;
 
+# variables
+my @keywords;
+
+# main
+read_keywords();
+
 validate_dir($data_dir);
 
 my ($who,$when) = get_download_timestamp();
@@ -16,6 +22,15 @@ my ($who,$when) = get_download_timestamp();
 parse_timeline();
 
 parse_messages();
+
+# functions
+sub read_keywords {
+	my $keyfile = "keywords.txt";
+	my $key_content = read_file($keyfile);
+	chomp($key_content);
+	@keywords = split(/\s+/,$key_content);
+	print Dumper(\@keywords);
+}
 
 sub validate_dir {
 	my ($data_dir) = @_;
@@ -64,7 +79,46 @@ sub get_download_timestamp {
 }
 
 sub parse_timeline {
-	die "unimplemented parse";
+	my $timeline_htm = read_file("html/timeline.htm");
+	my $timeline_size = length($timeline_htm);
+	print "got $timeline_size bytes in timeline.htm\n";
+
+	my $tree = HTML::TreeBuilder->new;    # empty tree
+	$tree->parse_content($timeline_htm);
+	print "parsed timeline\n"; # TODO: include time
+
+	my $contents_div = $tree->look_down('_tag' => 'div', class => 'contents');
+
+	my @posts = $contents_div->look_down('_tag' => 'p');
+	my $post_count = scalar @posts;
+	print "found $post_count posts\n";
+
+	my %key_counts;
+	foreach my $post (@posts) {
+		my $comment_div = $post->look_down('_tag' => 'div', class => 'comment');
+		my $meta = $post->look_down('_tag' => 'div', class => 'meta')->as_text;
+		# TODO: pull out "X Y Z shared a post" part that isn't in a div
+
+		my $comment;
+		if (defined $comment_div) {
+			$comment = $comment_div->as_text;
+		} else {
+			$comment = "undefined";
+		}
+
+		foreach my $keyword (@keywords) {
+			if ($comment =~ /$keyword/i) {
+				print "matched $keyword:\n";
+				print "\tmeta=$meta\n";
+				print "\tcomment=$comment\n";
+
+				$key_counts{$keyword}++;
+			}
+		}
+	}
+	print Dumper(\%key_counts);
+
+	die "unimplemented parse..............";
 }
 
 sub parse_messages {

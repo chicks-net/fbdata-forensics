@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Data::Dumper; # just for debugging
+use Data::Dumper;
 use File::Slurp qw(read_file);
 #use LWP::Simple qw(get);
 use HTML::TreeBuilder;
@@ -18,6 +18,7 @@ read_keywords();
 validate_dir($data_dir);
 
 my ($who,$when) = get_download_timestamp();
+print "Downloaded $when\n";
 
 parse_timeline();
 
@@ -29,7 +30,7 @@ sub read_keywords {
 	my $key_content = read_file($keyfile);
 	chomp($key_content);
 	@keywords = split(/\s+/,$key_content);
-	print Dumper(\@keywords);
+	print Data::Dumper->Dump([\@keywords],[qw(keywords)]);
 }
 
 sub validate_dir {
@@ -108,17 +109,17 @@ sub parse_timeline {
 
 		foreach my $keyword (@keywords) {
 			if ($comment =~ /$keyword/i) {
-				print "matched $keyword:\n";
-				print "\tmeta=$meta\n";
-				print "\tcomment=$comment\n";
+				if (0) {
+					print "matched $keyword:\n";
+					print "\tmeta=$meta\n";
+					print "\tcomment=$comment\n";
+				}
 
 				$key_counts{$keyword}++;
 			}
 		}
 	}
-	print Dumper(\%key_counts);
-
-	die "unimplemented parse..............";
+	print Data::Dumper->Dump([\%key_counts],[qw(found_counts)]);
 }
 
 sub parse_messages {

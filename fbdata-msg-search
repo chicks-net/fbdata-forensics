@@ -1,0 +1,170 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Data::Dumper;
+use File::Slurp qw(read_file);
+use HTML::TreeBuilder;
+use DBI;
+
+my ($data_dir,$search_term) = @ARGV;
+
+# variables
+my @keywords;
+
+# main
+read_keywords();
+
+validate_dir($data_dir);
+die "second arg is search term" unless defined $search_term and length $search_term;
+
+my $dbh = open_db();
+
+my ($who,$when) = get_download_timestamp();
+print "Downloaded $when\n";
+
+# keywrods if -k given
+if ($search_term eq '-k') {
+	msg_search(@keywords);
+} else {
+	msg_search($search_term);
+}
+
+$dbh->disconnect();
+
+# functions
+sub read_keywords {
+	my $keyfile = "keywords.txt";
+	my $key_content = read_file($keyfile);
+	chomp($key_content);
+	@keywords = split(/\s+/,$key_content);
+#	print Data::Dumper->Dump([\@keywords],[qw(keywords)]);
+}
+
+sub validate_dir {
+	my ($data_dir) = @_;
+
+	unless (-d $data_dir) {
+		die "not a directory: $data_dir";
+	}
+
+	chdir($data_dir) or die "couldn't chdir($data_dir): $!";
+
+	# needed for Download date
+	unless (-f 'index.htm') {
+		die "no index.htm";
+	}
+
+	foreach my $dir (qw( html messages photos videos)) {
+		unless (-d $dir) {
+			die "no $dir directory";
+		}
+	}
+
+	# the timeline
+	unless (-f 'html/timeline.htm') {
+		die "no html/timeline.htm";
+	}
+
+	print "$data_dir looks like a Facebook data dump\n";
+}
+
+sub open_db {
+	my $dbfilename = 'fbdata.sqlite';
+	unless (-e $dbfilename) {
+		die "no file $dbfilename";
+	}
+
+	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfilename","","") or die "DBI: $DBI::errstr";
+	return $dbh;
+}
+
+sub get_download_timestamp {
+	#system("pwd");
+	my $index_htm = read_file("index.htm");
+	my $index_size = length($index_htm);
+	print "got $index_size bytes in index.htm\n";
+
+	my $tree = HTML::TreeBuilder->new;    # empty tree
+	$tree->parse_content($index_htm);
+
+#	$tree->dump;
+	my $downloaded_div = $tree->look_down('_tag' => 'div', class => 'footer');
+	my $downloaded_raw = $downloaded_div->as_text;
+	$downloaded_raw =~ /Downloaded by (.+) on (.+)$/;
+	my $who = $1;
+	my $when = $2;
+	return($who,$when);
+}
+
+sub insert {
+	my($tablename,$newrec) = @_;
+
+	my $sql = "insert into $tablename (";
+	my @keys = sort keys %$newrec;
+	$sql .= join (',',@keys);
+	$sql .= ') values (';
+	$sql .= join(',', map {$dbh->quote($newrec->{$_})} @keys);
+	$sql .= ')';
+	$dbh->do($sql) or die "DBI: $DBI::errstr";
+}
+
+sub msg_search {
+	my(@search_words) = @_;
+
+	my $out_filename = 'message_matches.txt';
+	open(my $out, '>', $out_filename) or die "couldn't open $out_filename: $!";
+	print $out "# messages downloaded by $who at $when\n";
+
+	print "searching for " . join(', ', @search_words) . "\n";
+
+	my $csql = 'select count(*) from fb_items';
+	#$dbh->do($sql) or die "DBI: $DBI::errstr";
+
+	my $sth = $dbh->prepare($csql) or die "prepare($csql): $DBI::errstr";
+	$sth->execute() or die "prepare($csql): $DBI::errstr";
+
+	my $count_row = $sth->fetchrow_hashref();
+	my $msg_count = $count_row->{'count(*)'};
+	print "writing to $out_filename for matches in $msg_count messages\n";
+	print $out "\n$msg_count total messages searched.\n";
+	print $out "\n";
+
+	my $sql = 'select * from fb_items';
+	$sth = $dbh->prepare($sql) or die "prepare($sql): $DBI::errstr";
+	$sth->execute() or die "prepare($sql): $DBI::errstr";
+
+	my $row_count = 0;
+	while ( my $row = $sth->fetchrow_hashref() ) {
+		my $content = $row->{content};
+
+		$row_count++;
+		if ( ($row_count % 4000) == 0) {
+			my $done_perc = sprintf("%.1f", 100*$row_count/$msg_count);
+			print "$row_count/$msg_count ($done_perc %)\n";
+		}
+
+		my @match_words;
+		foreach my $keyword (@keywords) {
+			if ($content =~ /$keyword/) {
+				push(@match_words,$keyword);
+			}
+		}
+		if (scalar @match_words) {
+			print_message($out,$row,\@match_words);
+#			print Dumper(\@match_words,$row); die 'debug';
+		}
+	}
+}
+
+sub print_message {
+	my ($fh, $rec, $matches) = @_;
+
+	print $fh "matched:" . join(', ', @$matches) . "\n";
+	print $fh "speaker:" . $rec->{speaker} . "\n";
+	print $fh "participant:" . $rec->{participant} . "\n";
+	print $fh "when:" . $rec->{timestamp} . "\n";
+	print $fh "content:" . $rec->{content} . "\n";
+#	print $fh "foo:" . $rec->{} . "\n";
+	print $fh "\n";
+}

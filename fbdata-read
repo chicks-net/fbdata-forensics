@@ -6,6 +6,7 @@ use Data::Dumper;
 use File::Slurp qw(read_file);
 #use LWP::Simple qw(get);
 use HTML::TreeBuilder;
+use DBI;
 
 my ($data_dir) = @ARGV;
 
@@ -15,14 +16,20 @@ my @keywords;
 # main
 read_keywords();
 
+my $create_sql = read_file('create.sql');
+
 validate_dir($data_dir);
+
+my $dbh = create_db();
 
 my ($who,$when) = get_download_timestamp();
 print "Downloaded $when\n";
 
-parse_timeline();
+#parse_timeline();
 
 parse_messages();
+
+$dbh->disconnect();
 
 # functions
 sub read_keywords {
@@ -59,6 +66,19 @@ sub validate_dir {
 	}
 
 	print "$data_dir looks like a Facebook data dump\n";
+}
+
+sub create_db {
+	my $dbfilename = 'fbdata.sqlite';
+	my $create = 0;
+	$create = 1 unless -e $dbfilename;
+	my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfilename","","") or die "DBI: $DBI::errstr";
+	if ($create) {
+		print $create_sql;
+		$dbh->do($create_sql) or die "DBI: $DBI::errstr";
+	}
+
+	return $dbh;
 }
 
 sub get_download_timestamp {
@@ -109,7 +129,7 @@ sub parse_timeline {
 
 		foreach my $keyword (@keywords) {
 			if ($comment =~ /$keyword/i) {
-				if (0) {
+				if (1) {
 					print "matched $keyword:\n";
 					print "\tmeta=$meta\n";
 					print "\tcomment=$comment\n";
@@ -119,9 +139,112 @@ sub parse_timeline {
 			}
 		}
 	}
-	print Data::Dumper->Dump([\%key_counts],[qw(found_counts)]);
+	print Data::Dumper->Dump([\%key_counts],[qw(timeline_counts)]);
 }
 
 sub parse_messages {
-	die "unimplemented parse msg";
+	chdir("messages") or die "failed chdir(messages): $!";
+
+	my %message_meta;
+	my @html_files = <[0-9]*.html>;
+	foreach my $filename (reverse @html_files) {
+		# store metadata
+		my $conv_id = $filename;
+		$conv_id =~ s/\.html$//;
+		$message_meta{$conv_id}{filename} = $filename; 
+
+		# read and parse HTML
+		my $conversation_htm = read_file($filename);
+		my $conversation_size = length($conversation_htm);
+		$message_meta{$conv_id}{filesize} = $conversation_size;
+		my $tree = HTML::TreeBuilder->new;    # empty tree
+		$tree->parse_content($conversation_htm);
+
+		# who were you talking to?
+		my $title = $tree->look_down('_tag' => 'title');
+		my $title_txt = $title->as_text;
+		my $others = $title_txt;
+		$others =~ s/^Conversation with //;
+		$message_meta{$conv_id}{others} = $others;
+
+		# How many messsages are there?
+		my $thread_div = $tree->look_down('_tag' => 'div', class => 'thread');
+		my @message_headers = $thread_div->look_down('_tag' => 'div', class => 'message');
+		my $message_count = scalar @message_headers;
+		$message_meta{$conv_id}{message_count} = $message_count;
+#		my @message_contents = $thread_div->look_down('_tag' => 'p');
+#		my $p_count = scalar @message_contents;
+#		die "$p_count != $message_count for conv_id=$conv_id" unless $p_count == $message_count;
+
+		my %keyword_counts;
+		my $p_count = 0;
+
+		print "going through $message_count messages in conv_id=$conv_id\n";
+
+		foreach my $header (@message_headers) {
+			my %msg_rec = (
+				type => 'message',
+				participant => $others,
+				redact => 0,
+			);
+			my $header_text = $header->as_text();
+
+			# get message and validate
+			my $message = $header->right();
+			if (defined $message) {
+				$p_count++;
+			} else {
+				die "something weird happened for $header_text";
+			}
+			unless ($message->tag eq 'p') {
+				die "message is not in a p tag for $header_text";
+			}
+
+			$msg_rec{content} = $message->as_text;
+			$msg_rec{content_html} = $message->as_HTML;
+
+			# get who
+			my $speaker = $header->look_down('_tag' => 'span', class => 'user');
+			$msg_rec{speaker} = $speaker->as_text;
+
+			# get when
+			my $when = $header->look_down('_tag' => 'span', class => 'meta');
+			$msg_rec{timestamp} = $speaker->as_text;
+
+			insert('fb_items',\%msg_rec);
+			
+			# How many times do keywords show up?
+		}
+		die "$p_count != $message_count for conv_id=$conv_id" unless $p_count == $message_count;
+
+		# When was the newest message?
+
+		# When was the oldest message?
+
+		# Store in database
+
+#		$tree->dump;
+#		die 'code more here';
+
+#		my $downloaded_div = $tree->look_down('_tag' => 'div', class => 'footer');
+#		my $downloaded_raw = $downloaded_div->as_text;
+#		$downloaded_raw =~ /Downloaded by (.+) on (.+)$/;
+#		my $who = $1;
+	}
+#	print Dumper(\%message_meta);
+
+	chdir("..") or die "failed chdir(..): $!";
+	$dbh->disconnect(); die "unimplemented parse msg";
+}
+
+sub insert {
+	my($tablename,$newrec) = @_;
+
+	my $sql = "insert into $tablename (";
+	my @keys = sort keys %$newrec;
+	$sql .= join (',',@keys);
+	$sql .= ') values (';
+	$sql .= join(',', map {$dbh->quote($newrec->{$_})} @keys);
+	$sql .= ')';
+	$dbh->do($sql) or die "DBI: $DBI::errstr";
 }

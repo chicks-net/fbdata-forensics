@@ -209,7 +209,7 @@ sub parse_messages {
 
 			# get when
 			my $when = $header->look_down('_tag' => 'span', class => 'meta');
-			$msg_rec{timestamp} = $speaker->as_text;
+			$msg_rec{timestamp} = $when->as_text;
 
 			insert('fb_items',\%msg_rec);
 			

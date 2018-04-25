@@ -6,4 +6,17 @@ to give us.
 
 ## Status
 
-Just starting.
+Working:
+
+* search timeline for keywords
+* read messages into sqlite database
+* search database for keywords
+
+Expected someday:
+
+* print out all messages with one person
+* note relationships of people
+
+Maybe:
+
+* parse other files

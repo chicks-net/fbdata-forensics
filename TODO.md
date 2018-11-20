@@ -16,4 +16,5 @@ I will consider decent pull requests for these features.
 
 * parse other files
 * feature comparison versus othe other FLOSS tools
-
+* sample data (in JSON format) for QA tests and tutorials
+* any [Kwalitee](https://qa.perl.org/phalanx/kwalitee.html) improvements

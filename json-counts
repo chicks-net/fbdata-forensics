@@ -1,0 +1,39 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Data::Dumper;
+#use JSON;
+
+my ($data_dir) = @ARGV;
+validate_dir($data_dir);
+
+sub validate_dir {
+	my ($data_dir) = @_;
+
+	unless (-d $data_dir) {
+		die "not a directory: $data_dir";
+	}
+
+	chdir($data_dir) or die "couldn't chdir($data_dir): $!";
+
+	my @top_dirs = qw( about_you ads apps_and_websites calls_and_messages
+			comments events following_and_followers friends
+			groups likes_and_reactions location_history
+			marketplace messages other_activity pages
+			payment_history photos_and_videos posts
+			profile_information saved_items search_history
+			security_and_login_information your_places);
+	foreach my $dir (@top_dirs) {
+		unless (-d $dir) {
+			die "no $dir directory in $data_dir";
+		}
+	}
+
+	# the timeline
+	unless (-f 'location_history/your_location_history.json') {
+		die "no location_history/your_location_history.json";
+	}
+
+	print "$data_dir looks like a Facebook data dump\n";
+}

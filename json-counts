@@ -3,10 +3,31 @@
 use strict;
 use warnings;
 use Data::Dumper;
-#use JSON;
+use File::Slurp qw(read_file);
+use JSON::MaybeXS qw(decode_json);
+
+my $location_filename = 'location_history/your_location_history.json';
 
 my ($data_dir) = @ARGV;
 validate_dir($data_dir);
+
+count_locations();
+
+sub count_locations {
+	my $locs = read_json($location_filename);
+	print Dumper($locs);
+}
+
+sub read_json {
+	my ($json_filename) = @_;
+	my $file_contents = read_file($json_filename);
+
+	my $json = JSON::MaybeXS->new->allow_nonref;
+	my $js_ref = $json->decode($file_contents);
+	die "no ref back from json->decode()" unless $js_ref;
+
+	return $js_ref;
+}
 
 sub validate_dir {
 	my ($data_dir) = @_;
@@ -31,8 +52,8 @@ sub validate_dir {
 	}
 
 	# the timeline
-	unless (-f 'location_history/your_location_history.json') {
-		die "no location_history/your_location_history.json";
+	unless (-f $location_filename) {
+		die "no  $location_filename";
 	}
 
 	print "$data_dir looks like a Facebook data dump\n";

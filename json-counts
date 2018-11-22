@@ -11,10 +11,217 @@ my $location_filename = 'location_history/your_location_history.json';
 my ($data_dir) = @ARGV;
 validate_dir($data_dir);
 
-count_locations();
-count_posts();
+our @generic_index = (
+	{
+		key => '',
+		filename => 'about_you/face_recognition.json',
+		typename => ''
+	},
+	{
+		key => '',
+		filename => 'about_you/friend_peer_group.json',
+		typename => 'friend_peer_group'
+	},
+	{
+		key => '',
+		filename => 'about_you/your_address_books.json',
+		typename => 'address_book'
+	},
+	{
+		key => 'history',
+		filename => 'ads/ads_interests.json',
+		typename => 'ad interests'
+	},
+	{
+		key => 'history',
+		filename => 'ads/advertisers_who_uploaded_a_contact_list_with_your_information.json',
+		typename => 'advertiser uploaded contact'
+	},
+	{
+		key => 'history',
+		filename => 'ads/advertisers_you\'ve_interacted_with.json',
+		typename => 'advertiser touched'
+	},
+	{
+		key => 'installed_apps',
+		filename => 'apps_and_websites/apps_and_websites.json',
+		typename => 'installed_apps'
+	},
+	{
+		key => '',
+		filename => 'apps_and_websites/posts_from_apps_and_websites.json',
+		typename => 'app_post'
+	},
+	{
+		key => 'comments',
+		filename => 'comments/comments.json',
+		typename => 'comment'
+	},
+	{
+		key => 'events_invited',
+		filename => 'events/event_invitations.json',
+		typename => 'events_invited'
+	},
+	{
+		key => '',
+		filename => 'events/your_event_responses.json',
+		typename => 'event_responses'
+	},
+	{
+		key => 'pages_followed',
+		filename => 'following_and_followers/followed_pages.json',
+		typename => 'followed page'
+	},
+	{
+		key => 'following',
+		filename => 'following_and_followers/following.json',
+		typename => 'following'
+	},
+	{
+		key => 'friends',
+		filename => 'friends/friends.json',
+		typename => 'friends'
+	},
+	{
+		key => 'received_requests',
+		filename => 'friends/received_friend_requests.json',
+		typename => 'received friends requests'
+	},
+	{
+		key => 'rejected_requests',
+		filename => 'friends/rejected_friend_requests.json',
+		typename => 'rejected friends requests'
+	},
+	{
+		key => 'sent_requests',
+		filename => 'friends/sent_friend_requests.json',
+		typename => 'sent friend requests'
+	},
+	{
+		key => 'groups_joined',
+		filename => 'groups/your_group_membership_activity.json',
+		typename => 'groups joined'
+	},
+	{
+		key => 'group_posts',
+		filename => 'groups/your_posts_and_comments_in_groups.json',
+		typename => 'group_posts'
+	},
+	{
+		key => 'other_likes',
+		filename => 'likes_and_reactions/likes_on_external_sites.json',
+		typename => 'other like'
+	},
+	{
+		key => 'page_likes',
+		filename => 'likes_and_reactions/pages.json',
+		typename => 'page like'
+	},
+	{
+		key => 'reactions',
+		filename => 'likes_and_reactions/posts_and_comments.json',
+		typename => 'reaction'
+	},
+	{
+		key => 'location_history',
+		filename => 'location_history/your_location_history.json',
+		typename => 'location'
+	},
+	{
+		key => 'pokes',
+		filename => 'other_activity/pokes.json',
+		typename => 'pokes'
+	},
+	{
+		key => '',
+		filename => 'pages/your_pages.json',
+		typename => 'pages'
+	},
+	{
+		key => '',
+		filename => 'payment_history/payment_history.json',
+		typename => 'payments'
+	},
+	{
+		key => '',
+		filename => 'photos_and_videos/album/0.json',
+		typename => ''
+	},
+	{
+		key => 'wall_posts_sent_to_you',
+		filename => 'posts/other_people\'s_posts_to_your_timeline.json',
+		typename => 'wall_posts_sent_to_you'
+	},
+	{
+		key => 'status_updates',
+		filename => 'posts/your_posts.json',
+		typename => 'status update'
+	},
+	{
+		key => '',
+		filename => 'profile_information/profile_information.json',
+		typename => 'profile'
+	},
+	{
+		key => '',
+		filename => 'profile_information/profile_update_history.json',
+		typename => 'profiles_updates'
+	},
+	{
+		key => 'searches',
+		filename => 'search_history/your_search_history.json',
+		typename => 'searches'
+	},
+	{
+		key => 'account_activity',
+		filename => 'security_and_login_information/account_activity.json',
+		typename => 'account_activity'
+	},
+	{
+		key => 'admin_records',
+		filename => 'security_and_login_information/administrative_records.json',
+		typename => 'admin_records'
+	},
+	{
+		key => 'recognized_devices',
+		filename => 'security_and_login_information/authorized_logins.json',
+		typename => 'recognized_devices'
+	},
+	{
+		key => 'login_protection_data',
+		filename => 'security_and_login_information/login_protection_data.json',
+		typename => 'login_protection_data'
+	},
+	{
+		key => 'account_accesses',
+		filename => 'security_and_login_information/logins_and_logouts.json',
+		typename => 'account_accesses'
+	},
+	{
+		key => 'used_ip_address',
+		filename => 'security_and_login_information/used_ip_addresses.json',
+		typename => 'used_ip_address'
+	},
+	{
+		key => 'active_sessions',
+		filename => 'security_and_login_information/where_you\'re_logged_in.json',
+		typename => "active session"
+	},
+	{
+		key => 'your_places',
+		filename => 'your_places/places_you\'ve_created.json',
+		typename => "places you've created"
+	},
+);
+
 count_marketplace();
 count_saved_items();
+
+do_generics();
+
+#
+# count functions
+#
 
 sub count_saved_items {
 	my $no_saved_items_filename = 'saved_items/no-data.txt';
@@ -44,21 +251,56 @@ sub count_posts {
 	# TODO: status updaetes per year/month
 }
 
-sub count_locations {
-	my $locs = read_json($location_filename);
+#
+# generics
+#
 
-	my @locs = @{$locs->{'location_history'}};
-
-	my $loc_count = scalar @locs;
-	print "- $loc_count location entries\n";
+sub do_generics {
+	foreach my $generic (@generic_index) {
+		my $key = $generic->{key};
+		my $filename = $generic->{filename};
+		my $typename = $generic->{typename};
+		if (length $key) {
+			count_generic($filename,$typename,$key);
+		} else {
+			top_keys_file($filename);
+		}
+	}
 }
+
+sub count_generic {
+	my ($filename,$type,$key) = @_;
+
+	unless (-f $filename) {
+		warn "no such file as $filename";
+		return;
+	}
+	my $hash = read_json($filename);
+
+	my @things = @{$hash->{$key}};
+
+	my $count = scalar @things;
+	print "- $count $type entries\n";
+}
+
+#
+# utility functions
+#
 
 sub top_keys {
 	my ($hash) = @_;
 
 	my @keys = keys %$hash;
 
-	print "% " . join("\n% ", @keys) . "\n";
+	print "  % " . join("\n  % ", @keys) . "\n";
+}
+
+sub top_keys_file {
+	my ($filename) = @_;
+
+	my $hash = read_json($filename);
+	print " + $filename :\n";
+	top_keys($hash);
 }
 
 sub read_json {
@@ -71,6 +313,10 @@ sub read_json {
 
 	return $js_ref;
 }
+
+#
+# sanity check
+#
 
 sub validate_dir {
 	my ($data_dir) = @_;

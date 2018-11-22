@@ -27,7 +27,55 @@ More features are [planned](TODO.md).
 
 ## Using
 
-TODO: write!!
+### Get your data
+
+Get your data [from Facebook](https://www.facebook.com/help/1701730696756992?helpref=hc_global_nav).
+Ask for it as JSON since this tool doesn't process the HTML flavor of the data download.
+I've seen reports of the data taking 2-4 hours to be ready, but for me it took 28 hours.
+
+Facebook gives you a file like `facebook-username.zip`.
+I would rename it to `facebook-username-YYYMMDD.zip`.  So for me it ends up being `facebook-chicks-20181118.zip`.
+
+### Unpack your data
+
+Within a copy of this repo create a directory like `data.username`.  For me
+`data.chicks` would be created by
+
+	mkdir data.chicks
+
+NOTE: Any `data.*` directory will be hard to add to git because it is intentionally in the
+[`.gitignore`](.gitignore).
+
+Then unpack your data into that directory:
+
+	cd data.chicks
+	unzip ~/Downloads/facebook-chicks-20181118
+	# zip, zip, zip
+	cd ..
+	# you should be back in the top dir of this repo
+
+### Data overview
+
+To get a high-level overview run `./json-counts` with a directory of Facebook data prepared
+as mentioned in the previous section.  For example:
+
+	fbdata-forensics$ ./json-counts data.chicks
+	data.chicks looks like a Facebook data dump
+	- 0 marketplace entries
+	- 0 saved_items entries
+	... skipping about_you/face_recognition.json which isn't generic enough for here
+	... skipping about_you/friend_peer_group.json which isn't generic enough for here
+	... skipping about_you/your_address_books.json which isn't generic enough for here
+	- 0 ad interests entries
+	- 0 advertiser uploaded contact entries
+	- 4 advertiser touched entries
+	- 6 installed_apps entries
+	- 361 app_post entries
+	- 79 comment entries
+
+### Search messages
+
+TODO: implement
 
 ## Support
 

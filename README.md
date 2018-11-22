@@ -19,9 +19,7 @@ it seemed like a good time for a tool to help us analyze the data dump Facebook 
 
 Working:
 
-* search timeline for keywords
-* read messages into sqlite database
-* search database for keywords
+* show counts of various database records
 
 More features are [planned](TODO.md).
 

@@ -13,17 +13,20 @@ validate_dir($data_dir);
 
 our @generic_index = (
 	{
-		key => '',
+		key => '', # just a hash
+		skip => 1,
 		filename => 'about_you/face_recognition.json',
 		typename => ''
 	},
 	{
-		key => '',
+		key => '', # tiny
+		skip => 1,
 		filename => 'about_you/friend_peer_group.json',
 		typename => 'friend_peer_group'
 	},
 	{
-		key => '',
+		key => '', # address_book -> address_book
+		skip => 1,
 		filename => 'about_you/your_address_books.json',
 		typename => 'address_book'
 	},
@@ -48,7 +51,7 @@ our @generic_index = (
 		typename => 'installed_apps'
 	},
 	{
-		key => '',
+		key => 'app_posts',
 		filename => 'apps_and_websites/posts_from_apps_and_websites.json',
 		typename => 'app_post'
 	},
@@ -63,7 +66,8 @@ our @generic_index = (
 		typename => 'events_invited'
 	},
 	{
-		key => '',
+		key => '', # 3 subkeys
+		skip => 1,
 		filename => 'events/your_event_responses.json',
 		typename => 'event_responses'
 	},
@@ -133,17 +137,19 @@ our @generic_index = (
 		typename => 'pokes'
 	},
 	{
-		key => '',
+		key => 'pages',
 		filename => 'pages/your_pages.json',
 		typename => 'pages'
 	},
 	{
-		key => '',
+		key => '', # payments -> payments
+		skip => 1,
 		filename => 'payment_history/payment_history.json',
 		typename => 'payments'
 	},
 	{
 		key => '',
+		skip => 1,
 		filename => 'photos_and_videos/album/0.json',
 		typename => ''
 	},
@@ -158,14 +164,15 @@ our @generic_index = (
 		typename => 'status update'
 	},
 	{
-		key => '',
+		key => '', # not countable
+		skip => 1,
 		filename => 'profile_information/profile_information.json',
 		typename => 'profile'
 	},
 	{
-		key => '',
+		key => 'profile_updates',
 		filename => 'profile_information/profile_update_history.json',
-		typename => 'profiles_updates'
+		typename => 'profile_updates'
 	},
 	{
 		key => 'searches',
@@ -260,6 +267,13 @@ sub do_generics {
 		my $key = $generic->{key};
 		my $filename = $generic->{filename};
 		my $typename = $generic->{typename};
+
+		my $skip = $generic->{skip} || 0;
+		if ($skip) {
+			print "... skipping $filename which isn't generic enough for here\n";
+			next; # skip!
+		}
+
 		if (length $key) {
 			count_generic($filename,$typename,$key);
 		} else {

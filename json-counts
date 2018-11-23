@@ -6,6 +6,7 @@ use Data::Dumper;
 use File::Slurp qw(read_file);
 use JSON::MaybeXS qw(decode_json);
 
+# still used for validation
 my $location_filename = 'location_history/your_location_history.json';
 
 my ($data_dir) = @ARGV;
@@ -159,6 +160,7 @@ our @generic_index = (
 		typename => 'wall_posts_sent_to_you'
 	},
 	{
+		# TODO: status updaetes per year/month
 		key => 'status_updates',
 		filename => 'posts/your_posts.json',
 		typename => 'status update'
@@ -235,7 +237,7 @@ sub count_saved_items {
 	if (-f $no_saved_items_filename) {
 		print "- 0 saved_items entries\n";
 	} else {
-		warn "unimplemented saved_items count";
+		warn "unimplemented saved_items count"; # TODO: implement
 	}
 }
 
@@ -244,18 +246,8 @@ sub count_marketplace {
 	if (-f $no_marketplace_filename) {
 		print "- 0 marketplace entries\n";
 	} else {
-		warn "unimplemented marketplace count";
+		warn "unimplemented marketplace count"; # TODO: implement
 	}
-}
-
-sub count_posts {
-	my $your_posts_filename = 'posts/your_posts.json';
-	my $your_posts = read_json($your_posts_filename);
-	my @status_updates = @{ $your_posts->{'status_updates'} };
-	my $status_update_count = scalar @status_updates;
-	print "- $status_update_count status updates\n";
-
-	# TODO: status updaetes per year/month
 }
 
 #

@@ -31,6 +31,8 @@ Get your data [from Facebook](https://www.facebook.com/help/1701730696756992?hel
 Ask for it as JSON since this tool doesn't process the HTML flavor of the data download.
 I've seen reports of the data taking 2-4 hours to be ready, but for me it took 28 hours.
 
+![pick JSON](img/pick_json.png)
+
 Facebook gives you a file like `facebook-username.zip`.
 I would rename it to `facebook-username-YYYMMDD.zip`.  So for me it ends up being `facebook-chicks-20181118.zip`.
 

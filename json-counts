@@ -258,8 +258,25 @@ sub count_marketplace {
 sub do_messages {
 	my $conversations = `find messages -name message.json`;
 	my @conversations = split(/\n/,$conversations);
-	print "- ", scalar(@conversations), " conversations found in Facebook Messages\n";
-	warn "working";
+	my $conversation_count = scalar(@conversations);
+	print "- $conversation_count conversations found in Facebook Messages\n";
+
+	my $total_messages = 0;
+	foreach my $convo_filename (@conversations) {
+		my $conversation = read_json($convo_filename);
+		my $title = $conversation->{'title'}; # usually the other person
+
+		# count messages
+		my @things = @{$conversation->{'messages'}};
+		my $count = scalar @things;
+		$total_messages += $count;
+
+		# parse out bucket from filename
+		my(undef, $bucket) = split(m{[/]}, $convo_filename);
+
+		print "+ $count messages with $title ($bucket)\n";
+	}
+	print "- $total_messages messages in those $conversation_count conversations\n";
 }
 
 #

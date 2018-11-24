@@ -11,9 +11,9 @@ before coding on these.
 
 ## Maybe, maybe not:
 
-I will consider decent pull requests for these features.
+I will consider pull requests for these features without prior discussion.
 
-* parse other files
-* feature comparison versus othe other FLOSS tools
+* feature comparison versus other FLOSS tools
 * sample data (in JSON format) for QA tests and tutorials
 * any [Kwalitee](https://qa.perl.org/phalanx/kwalitee.html) improvements
+* parse other files (but now with JSON this task has shrunk considerably)

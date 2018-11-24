@@ -14,24 +14,6 @@ validate_dir($data_dir);
 
 our @generic_index = (
 	{
-		key => '', # just a hash
-		skip => 1,
-		filename => 'about_you/face_recognition.json',
-		typename => ''
-	},
-	{
-		key => '', # tiny
-		skip => 1,
-		filename => 'about_you/friend_peer_group.json',
-		typename => 'friend_peer_group'
-	},
-	{
-		key => '', # address_book -> address_book
-		skip => 1,
-		filename => 'about_you/your_address_books.json',
-		typename => 'address_book'
-	},
-	{
 		key => 'history',
 		filename => 'ads/ads_interests.json',
 		typename => 'ad interests'
@@ -65,12 +47,6 @@ our @generic_index = (
 		key => 'events_invited',
 		filename => 'events/event_invitations.json',
 		typename => 'events_invited'
-	},
-	{
-		key => '', # 3 subkeys
-		skip => 1,
-		filename => 'events/your_event_responses.json',
-		typename => 'event_responses'
 	},
 	{
 		key => 'pages_followed',
@@ -143,18 +119,6 @@ our @generic_index = (
 		typename => 'pages'
 	},
 	{
-		key => '', # payments -> payments
-		skip => 1,
-		filename => 'payment_history/payment_history.json',
-		typename => 'payments'
-	},
-	{
-		key => '',
-		skip => 1,
-		filename => 'photos_and_videos/album/0.json',
-		typename => ''
-	},
-	{
 		key => 'wall_posts_sent_to_you',
 		filename => 'posts/other_people\'s_posts_to_your_timeline.json',
 		typename => 'wall_posts_sent_to_you'
@@ -164,12 +128,6 @@ our @generic_index = (
 		key => 'status_updates',
 		filename => 'posts/your_posts.json',
 		typename => 'status update'
-	},
-	{
-		key => '', # not countable
-		skip => 1,
-		filename => 'profile_information/profile_information.json',
-		typename => 'profile'
 	},
 	{
 		key => 'profile_updates',
@@ -220,6 +178,48 @@ our @generic_index = (
 		key => 'your_places',
 		filename => 'your_places/places_you\'ve_created.json',
 		typename => "places you've created"
+	},
+	{
+		key => '', # just a hash
+		skip => 1,
+		filename => 'about_you/face_recognition.json',
+		typename => ''
+	},
+	{
+		key => '', # tiny
+		skip => 1,
+		filename => 'about_you/friend_peer_group.json',
+		typename => 'friend_peer_group'
+	},
+	{
+		key => '', # address_book -> address_book
+		skip => 1,
+		filename => 'about_you/your_address_books.json',
+		typename => 'address_book'
+	},
+	{
+		key => '', # 3 subkeys
+		skip => 1,
+		filename => 'events/your_event_responses.json',
+		typename => 'event_responses'
+	},
+	{
+		key => '', # payments -> payments
+		skip => 1,
+		filename => 'payment_history/payment_history.json',
+		typename => 'payments'
+	},
+	{
+		key => '',
+		skip => 1,
+		filename => 'photos_and_videos/album/0.json',
+		typename => ''
+	},
+	{
+		key => '', # not countable
+		skip => 1,
+		filename => 'profile_information/profile_information.json',
+		typename => 'profile'
 	},
 );
 
@@ -274,7 +274,7 @@ sub do_generics {
 
 		my $skip = $generic->{skip} || 0;
 		if ($skip) {
-			print "... skipping $filename which isn't generic enough for here\n";
+			print "... skipping $filename which isn't generic enough to process yet.\n";
 			next; # skip!
 		}
 

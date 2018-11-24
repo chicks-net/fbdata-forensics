@@ -19,7 +19,8 @@ it seemed like a good time for a tool to help us analyze the data dump Facebook 
 
 Working:
 
-* show counts of various database records
+* show counts of various database records that Facebook keeps about you
+* search for keywrods in your [Facebook Messenger](https://www.facebook.com/messenger/) history
 
 More features are [planned](TODO.md).
 

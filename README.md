@@ -50,8 +50,10 @@ Once you've got that pre-requisite out of the way somehow you need to clone this
 ### Get your data
 
 Get your data [from Facebook](https://www.facebook.com/help/1701730696756992?helpref=hc_global_nav).
-Ask for it as JSON since this tool doesn't process the HTML flavor of the data download.
-I've seen reports of the data taking 2-4 hours to be ready, but for me it took 28 hours.
+Ask for it as JSON since this tool doesn't process the [HTML flavor](html_v0.1/)
+of the data download.  I've seen reports of the data taking 2-4 hours to be
+ready, but for me it took 28 hours:interrobang: :clock1130: :honey_pot: :zzz:
+I hope you aren't in a hurry.
 
 ![pick JSON](img/pick_json.png)
 

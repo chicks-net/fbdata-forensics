@@ -20,9 +20,30 @@ it seemed like a good time for a tool to help us analyze the data dump Facebook 
 Working:
 
 * show counts of various database records that Facebook keeps about you
+* show how many messages you've sent with each of your Facebook Messenger correspondants
 * search for keywrods in your [Facebook Messenger](https://www.facebook.com/messenger/) history
 
 More features are [planned](TODO.md).
+
+## Installation
+
+There are very few dependancies to make this code work.
+
+* Perl 5.x - nothing special or new needed
+* [`JSON::MaybeXS`](https://metacpan.org/pod/JSON::MaybeXS) module and one of the three JSON modules it supports.
+
+To get this on CentOS 7 I would run:
+
+	yum install perl-JSON-MaybeXS perl-JSON-XS
+
+In Debian or Ubuntu this should work:
+
+	apt-get install libjson-maybexs-perl libjson-xs-perl
+
+Once you've got that pre-requisite out of the way somehow you need to clone this repo:
+
+	git clone https://github.com/chicks-net/fbdata-forensics.git
+	cd fbdata-forensics
 
 ## Using
 
@@ -76,7 +97,7 @@ as mentioned in the previous section.  For example:
 
 ### Search messages
 
-Edit the [`keywords.txt`](keywords.txt) file to contain the items to dig for in your messages.
+Edit the [`keywords.txt`](keywords.txt) file to contain the words to dig for in your messages.
 Then run `./json-messages` with a directory of Facebook data like so:
 
 	fbdata-forensics$ ./json-messages data.chicks/

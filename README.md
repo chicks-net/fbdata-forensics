@@ -75,7 +75,21 @@ as mentioned in the previous section.  For example:
 
 ### Search messages
 
-TODO: implement
+Edit the [`keywords.txt`](keywords.txt) file to contain the items to dig for in your messages.
+Then run `./json-messages` with a directory of Facebook data like so:
+
+	fbdata-forensics$ ./json-messages data.chicks/
+	data.chicks/ looks like a Facebook data dump
+	- 107 conversations found in Facebook Messages
+	+ 1 messages with Abe Jones (inbox)
+	$keyword_matches = {};
+	+ 1 messages with Alex Smith (inbox)
+	$keyword_matches = {};
+	+ 6 messages with Bob Smith (inbox)
+	$keyword_matches = {};
+	+ 1 messages with Carol Jones (inbox)
+	$keyword_matches = {};
+
 
 ## Support
 

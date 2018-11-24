@@ -1,0 +1,141 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Data::Dumper;
+use File::Slurp qw(read_file);
+use JSON::MaybeXS qw(decode_json);
+
+our $keywords = read_keywords();
+
+# still used for validation
+my $location_filename = 'location_history/your_location_history.json';
+
+my ($data_dir) = @ARGV;
+validate_dir($data_dir);
+
+do_messages();
+
+#
+# messages
+#
+
+sub do_messages {
+	my $conversations = `find messages -name message.json`;
+	my @conversations = split(/\n/,$conversations);
+	my $conversation_count = scalar(@conversations);
+	print "- $conversation_count conversations found in Facebook Messages\n";
+
+	my $total_messages = 0;
+	foreach my $convo_filename (@conversations) {
+		my $conversation = read_json($convo_filename);
+		my $title = $conversation->{'title'}; # usually the other person
+
+		# count messages
+		my @things = @{$conversation->{'messages'}};
+		my $count = scalar @things;
+		$total_messages += $count;
+
+		# parse out bucket from filename
+		my(undef, $bucket) = split(m{[/]}, $convo_filename);
+
+		print "+ $count messages with $title ($bucket)\n";
+
+		my %kw_match; # keyword matches
+#		%kw_match = map { $_, 0 } @$keywords;
+		foreach my $msg ( @{$conversation->{'messages'}} ) {
+			my $timestamp = $msg->{'timestamp_ms'};
+			my $content = $msg-> {'content'};
+
+			if (defined $content) {
+				foreach my $keyword ( @$keywords ) {
+					if ($content =~ /\b$keyword\b/) {
+						$kw_match{$keyword}++;
+						print "++ $timestamp match '$keyword': $content\n";
+					}
+				}
+				## print "++ $timestamp $content\n";
+			}
+		}
+		print Data::Dumper->Dump( [\%kw_match], [qw(keyword_matches)] );
+	}
+	print "- $total_messages messages in those $conversation_count conversations\n";
+}
+
+#
+# utility functions
+#
+
+sub read_keywords {
+        my $keyfile = "keywords.txt";
+        my $key_content = read_file($keyfile);
+        chomp($key_content);
+        my @keywords = split(/\s+/,$key_content);
+#	print Data::Dumper->Dump([\@keywords],[qw(keywords)]);
+#	my %keywords = map { $_, 1 } @keywords;
+#	print Dumper(\%keywords);
+	return \@keywords;
+}
+
+sub top_keys {
+	my ($hash) = @_;
+
+	my @keys = keys %$hash;
+
+	print "  % " . join("\n  % ", @keys) . "\n";
+}
+
+sub top_keys_file {
+	my ($filename) = @_;
+
+	my $hash = read_json($filename);
+	print " + $filename :\n";
+	top_keys($hash);
+}
+
+sub read_json {
+	my ($json_filename) = @_;
+	my $file_contents = read_file($json_filename);
+
+	my $json = JSON::MaybeXS->new->allow_nonref;
+	my $js_ref = $json->decode($file_contents);
+	die "no ref back from json->decode()" unless $js_ref;
+
+	return $js_ref;
+}
+
+#
+# sanity check
+#
+
+sub validate_dir {
+	my ($data_dir) = @_;
+
+	# is it a directory???
+	unless (-d $data_dir) {
+		die "not a directory: $data_dir";
+	}
+
+	chdir($data_dir) or die "couldn't chdir($data_dir): $!";
+
+	# does it contain the right subdirectories???
+	my @top_dirs = qw( about_you ads apps_and_websites calls_and_messages
+			comments events following_and_followers friends
+			groups likes_and_reactions location_history
+			marketplace messages other_activity pages
+			payment_history photos_and_videos posts
+			profile_information saved_items search_history
+			security_and_login_information your_places);
+	foreach my $dir (@top_dirs) {
+		unless (-d $dir) {
+			die "no $dir directory in $data_dir";
+		}
+	}
+
+	# how about a file?
+	unless (-f $location_filename) {
+		die "no  $location_filename";
+	}
+
+	print "$data_dir looks like a Facebook data dump\n";
+}

@@ -120,6 +120,10 @@ Then run `./json-messages` with a directory of Facebook data like so:
 Please file [github issues](https://github.com/chicks-net/fbdata-forensics/issues)
 for things not [already planned](TODO.md).
 
+## Mentions
+
+* Article in [December 2018 issue of eForinics](https://eforensicsmag.com/download/social-media-forensics/).
+
 ## Author
 
 [Christopher Hicks](http://www.chicks.net)

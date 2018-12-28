@@ -122,7 +122,7 @@ for things not [already planned](TODO.md).
 
 ## Mentions
 
-* Article in [December 2018 issue of eForinics](https://eforensicsmag.com/download/social-media-forensics/).
+* [Article](docs/eforensics_article.md) in [December 2018 issue of eForensics](https://eforensicsmag.com/download/social-media-forensics/).
 
 ## Author
 
